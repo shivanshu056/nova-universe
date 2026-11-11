@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UNIVERSE // Deep Space Explorer</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap');
+:root{--cyan:#75eaff;--white:#eaf8ff;--muted:#8aa9bc}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#02040c;color:var(--white);font-family:Inter,Arial,sans-serif}
+canvas{display:block;position:fixed;inset:0;z-index:0}
+#vignette{position:fixed;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse at center,transparent 35%,rgba(0,0,0,.42) 100%)}
+#ui{position:fixed;inset:0;z-index:2;pointer-events:none}
+header{position:absolute;top:22px;left:26px;right:26px;display:flex;align-items:center;justify-content:space-between}
+.brand{font:700 15px Orbitron;letter-spacing:4px;text-shadow:0 0 18px #50cfff}.brand span{color:var(--cyan)}
+.pill{border:1px solid #8bdfff55;background:#06132299;backdrop-filter:blur(12px);border-radius:30px;padding:9px 14px;color:#c9efff;font-size:11px;letter-spacing:1.5px}
+#left{position:absolute;left:28px;top:50%;transform:translateY(-50%);width:210px;pointer-events:auto}
+.kicker{font:11px Orbitron;letter-spacing:3px;color:var(--cyan);margin-bottom:13px}
+h1{font:600 clamp(25px,3vw,42px) Orbitron;line-height:1.18;margin:0 0 12px;text-shadow:0 0 25px #52bfff66}
+#description{font-size:12px;line-height:1.7;color:#a9c3d2;min-height:60px}
+#planetName{font:500 12px Orbitron;letter-spacing:2px;color:var(--cyan);margin-top:22px}
+#stats{font-size:10px;line-height:2;color:#88aabd;margin-top:9px}
+#right{position:absolute;right:25px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px;pointer-events:auto}
+.planetBtn,.control{cursor:pointer;color:#d8f5ff;border:1px solid #6bdcff44;background:#061321b8;backdrop-filter:blur(10px);padding:11px 13px;border-radius:7px;font:10px Orbitron;letter-spacing:1px;text-align:left;transition:.2s}
+.planetBtn:hover,.planetBtn.active,.control:hover{border-color:var(--cyan);background:#0b2a40d9;box-shadow:0 0 18px #55dfff22}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:9px;box-shadow:0 0 10px currentColor}
+#bottom{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:9px;pointer-events:auto;flex-wrap:wrap;justify-content:center;width:min(95%,650px)}
+.control{text-align:center;padding:11px 15px}
+#hint{position:absolute;bottom:78px;left:50%;transform:translateX(-50%);font-size:10px;color:#a3bdcb;letter-spacing:1.5px;white-space:nowrap;text-align:center}
+#soundNotice{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#02040ccc;backdrop-filter:blur(9px);pointer-events:auto}
+#soundCard{max-width:390px;margin:20px;text-align:center;padding:32px;border:1px solid #71dfff66;border-radius:16px;background:linear-gradient(145deg,#0b2034ee,#050914ee);box-shadow:0 0 60px #1aa8ff22}
+#soundCard h2{font:600 21px Orbitron;letter-spacing:2px;margin:0 0 12px}
+#soundCard p{font-size:12px;line-height:1.7;color:#a8c5d6}
+#enter{cursor:pointer;border:1px solid #8beaff;background:#0b3348;color:#e8fbff;padding:13px 22px;border-radius:30px;font:12px Orbitron;letter-spacing:2px;box-shadow:0 0 24px #48cfff44}
+#enter:hover{background:#12506a}
+#loading{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);font-size:10px;color:#6c91a6;letter-spacing:2px}
+@media(max-width:700px){header{top:14px;left:14px;right:14px}.brand{font-size:11px;letter-spacing:2px}#left{left:15px;top:auto;bottom:125px;transform:none;width:160px}h1{font-size:24px}#description{font-size:10px;min-height:42px}#planetName{margin-top:10px;font-size:10px}#stats{font-size:9px}#right{right:12px;top:48%;gap:5px}.planetBtn{padding:9px 8px;font-size:8px}.dot{margin-right:5px}#bottom{bottom:12px;gap:5px}.control{padding:9px 10px;font-size:8px}#hint{bottom:62px;font-size:8px}}
+</style>
+</head>
+<body>
+<div id="vignette"></div>
+<div id="ui">
+<header><div class="brand">NOVA<span> / </span>EXPLORER</div><div class="pill" id="coordinates">SECTOR 001 · MILKY WAY</div></header>
+<section id="left"><div class="kicker">DEEP SPACE INITIATIVE</div><h1>BEYOND<br>THE KNOWN.</h1><div id="description">A living 3D model of our cosmic neighbourhood. Select a world and begin your journey.</div><div id="planetName">SOL SYSTEM</div><div id="stats">8 WORLDS · 1 STAR<br>DRAG TO ORBIT · SCROLL TO ZOOM</div></section>
+<nav id="right">
+<button class="planetBtn active" data-id="0"><i class="dot" style="background:#f8d58a;color:#f8d58a"></i>THE SUN</button>
+<button class="planetBtn" data-id="1"><i class="dot" style="background:#aaa;color:#aaa"></i>MERCURY</button>
+<button class="planetBtn" data-id="2"><i class="dot" style="background:#e9b879;color:#e9b879"></i>VENUS</button>
+<button class="planetBtn" data-id="3"><i class="dot" style="background:#3d9bff;color:#3d9bff"></i>EARTH</button>
+<button class="planetBtn" data-id="4"><i class="dot" style="background:#d66c48;color:#d66c48"></i>MARS</button>
+<button class="planetBtn" data-id="5"><i class="dot" style="background:#d5ae82;color:#d5ae82"></i>JUPITER</button>
+<button class="planetBtn" data-id="6"><i class="dot" style="background:#e6d6a0;color:#e6d6a0"></i>SATURN</button>
+<button class="planetBtn" data-id="7"><i class="dot" style="background:#80ddeb;color:#80ddeb"></i>URANUS</button>
+<button class="planetBtn" data-id="8"><i class="dot" style="background:#477dff;color:#477dff"></i>NEPTUNE</button>
+</nav>
+<div id="hint">DRAG TO ROTATE &nbsp;·&nbsp; SCROLL TO ZOOM &nbsp;·&nbsp; SELECT A PLANET</div>
+<div id="bottom">
+<button class="control" id="sound">♫ SOUND ON</button><button class="control" id="pause">Ⅱ PAUSE</button><button class="control" id="speed">⏩ SPEED 1X</button><button class="control" id="home">⌂ RESET VIEW</button><button class="control" id="cinema">◉ CINEMATIC</button>
+</div>
+<div id="soundNotice"><div id="soundCard"><h2>ENTER THE COSMOS</h2><p>Put on your headphones. Activate the ambient space soundtrack, then explore a real-time animated 3D solar system. Sound starts only after your tap.</p><button id="enter">▶ INITIALIZE EXPERIENCE</button><div id="loading">THREE.JS · REAL-TIME 3D</div></div></div>
+</div>
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+import {OrbitControls} from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+
+const scene=new THREE.Scene(); scene.background=new THREE.Color(0x02040c); scene.fog=new THREE.FogExp2(0x02040c,.0019);
+const camera=new THREE.PerspectiveCamera(55,innerWidth/innerHeight,.1,1500); camera.position.set(0,32,78);
+const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'}); renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.setSize(innerWidth,innerHeight); renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.15; document.body.appendChild(renderer.domElement);
+const controls=new OrbitControls(camera,renderer.domElement); controls.enableDamping=true; controls.dampingFactor=.045; controls.minDistance=9; controls.maxDistance=190; controls.maxPolarAngle=Math.PI*.88;
+scene.add(new THREE.AmbientLight(0x7894bd,.55));
+const sunLight=new THREE.PointLight(0xffd6a0,1900,450,1.5); scene.add(sunLight);
+const starGeo=new THREE.BufferGeometry(), starCount=9000, starPos=new Float32Array(starCount*3);
+for(let i=0;i<starCount;i++){const r=250+Math.random()*650,t=Math.random()*Math.PI*2,p=Math.acos(2*Math.random()-1);starPos[i*3]=r*Math.sin(p)*Math.cos(t);starPos[i*3+1]=r*Math.cos(p);starPos[i*3+2]=r*Math.sin(p)*Math.sin(t)}
+starGeo.setAttribute('position',new THREE.BufferAttribute(starPos,3)); const stars=new THREE.Points(starGeo,new THREE.PointsMaterial({color:0xc4e7ff,size:.8,sizeAttenuation:true,transparent:true,opacity:.9}));scene.add(stars);
+const dustGeo=new THREE.BufferGeometry(),dustPos=new Float32Array(2200*3);for(let i=0;i<2200;i++){dustPos[i*3]=(Math.random()-.5)*180;dustPos[i*3+1]=(Math.random()-.5)*100;dustPos[i*3+2]=(Math.random()-.5)*180}dustGeo.setAttribute('position',new THREE.BufferAttribute(dustPos,3));scene.add(new THREE.Points(dustGeo,new THREE.PointsMaterial({color:0x4c9acb,size:.22,transparent:true,opacity:.5})));
+const sun=new THREE.Mesh(new THREE.SphereGeometry(4.3,64,64),new THREE.MeshBasicMaterial({color:0xffc45b}));scene.add(sun);
+const glow=new THREE.Sprite(new THREE.SpriteMaterial({map:(()=>{const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d'),g=x.createRadialGradient(64,64,3,64,64,64);g.addColorStop(0,'rgba(255,220,130,.8)');g.addColorStop(.25,'rgba(255,150,60,.25)');g.addColorStop(1,'rgba(255,100,30,0)');x.fillStyle=g;x.fillRect(0,0,128,128);return new THREE.CanvasTexture(c)})(),transparent:true,blending:THREE.AdditiveBlending}));glow.scale.set(25,25,1);scene.add(glow);
+const data=[
+{name:'THE SUN',desc:'The star at the heart of our solar system. Its gravity holds the planets in orbit and its light powers our world.',r:4.3,d:0,color:0xffc45b,period:0},
+{name:'MERCURY',desc:'A small, rocky world racing around the Sun. Its surface is covered with ancient impact craters.',r:.65,d:8,color:0x96918b,period:.24},
+{name:'VENUS',desc:'A world wrapped in thick golden clouds. Its runaway greenhouse atmosphere makes it the hottest planet.',r:1.05,d:12,color:0xd6a66f,period:.36},
+{name:'EARTH',desc:'Our pale blue dot. A world of oceans, continents and the only known home for life.',r:1.12,d:17,color:0x287de0,period:.55},
+{name:'MARS',desc:'The red planet. A cold desert world with giant volcanoes, deep canyons and signs of ancient water.',r:.82,d:22,color:0xc45c3c,period:.83},
+{name:'JUPITER',desc:'King of the planets. A gas giant with immense storms, including the centuries-old Great Red Spot.',r:2.8,d:32,color:0xc99d75,period:1.8},
+{name:'SATURN',desc:'A magnificent gas giant surrounded by bright rings made mostly of countless pieces of ice and rock.',r:2.35,d:43,color:0xd9c99b,period:2.7},
+{name:'URANUS',desc:'An ice giant that rotates on its side. Its blue-green colour comes from methane in the atmosphere.',r:1.75,d:54,color:0x75cbd2,period:3.8},
+{name:'NEPTUNE',desc:'A distant, deep-blue ice giant with supersonic winds. It takes 165 Earth years to orbit the Sun.',r:1.7,d:65,color:0x315de0,period:4.8}
+];
+const planets=[],orbitLines=[];
+function makePlanet(item,i){
+ const group=new THREE.Group();scene.add(group);group.position.x=item.d;
+ const mat=new THREE.MeshStandardMaterial({color:item.color,roughness:.85,metalness:.02});
+ const mesh=new THREE.Mesh(new THREE.SphereGeometry(item.r,48,48),mat);group.add(mesh);
+ if(i===3){const cloud=new THREE.Mesh(new THREE.SphereGeometry(item.r*1.018,40,40),new THREE.MeshStandardMaterial({color:0xffffff,transparent:true,opacity:.09,roughness:1}));group.add(cloud)}
+ if(i===6){const ring=new THREE.Mesh(new THREE.RingGeometry(item.r*1.35,item.r*2.15,96),new THREE.MeshStandardMaterial({color:0xc9b78d,side:THREE.DoubleSide,transparent:true,opacity:.78,roughness:1}));ring.rotation.x=Math.PI/2.35;group.add(ring)}
+ if(i===3){const moon=new THREE.Mesh(new THREE.SphereGeometry(.28,24,24),new THREE.MeshStandardMaterial({color:0xb9b9b0}));moon.position.set(2.3,.15,0);group.add(moon);group.userData.moon=moon}
+ const label=makeLabel(item.name);label.position.set(0,item.r+1.2,0);group.add(label);
+ if(i>0){const pts=[];for(let j=0;j<=160;j++){const a=j/160*Math.PI*2;pts.push(new THREE.Vector3(Math.cos(a)*item.d,0,Math.sin(a)*item.d))}const line=new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),new THREE.LineBasicMaterial({color:0x47738e,transparent:true,opacity:.25}));scene.add(line);orbitLines.push(line)}
+ planets.push({group,mesh,item,angle:Math.random()*6.28});
+}
+function makeLabel(txt){const c=document.createElement('canvas');c.width=512;c.height=96;const x=c.getContext('2d');x.font='bold 34px Orbitron,Arial';x.textAlign='center';x.fillStyle='#c7efff';x.shadowColor='#4acfff';x.shadowBlur=15;x.fillText(txt,256,55);const tex=new THREE.CanvasTexture(c);const s=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthWrite:false}));s.scale.set(5,1,1);return s}
+data.forEach(makePlanet);
+let selected=0,paused=false,speed=1,cinema=false,audio=null,master=null,oscillators=[];
+function selectPlanet(i){selected=i;document.querySelectorAll('.planetBtn').forEach(b=>b.classList.toggle('active',+b.dataset.id===i));const d=data[i];document.getElementById('planetName').textContent=d.name;document.getElementById('description').textContent=d.desc;document.getElementById('coordinates').textContent=i===0?'SECTOR 001 · MILKY WAY':`TARGET LOCK · ${d.name}`;document.getElementById('stats').innerHTML=i===0?'1 STAR · 8 WORLDS<br>DRAG TO ORBIT · SCROLL TO ZOOM':`ORBITAL DISTANCE · ${d.d||'CORE'} AU<br>DRAG TO ORBIT · SCROLL TO ZOOM`;const p=planets[i].group.position;const target=new THREE.Vector3(p.x,0,p.z);controls.target.copy(target);camera.position.copy(target.clone().add(new THREE.Vector3(0,Math.max(6,d.r*3),Math.max(12,d.r*5+8))));}
+document.querySelectorAll('.planetBtn').forEach(b=>b.addEventListener('click',()=>selectPlanet(+b.dataset.id)));
+function startAudio(){if(audio)return;const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;audio=new AC();master=audio.createGain();master.gain.value=.12;master.connect(audio.destination);const base=audio.createOscillator(),low=audio.createOscillator(),lfo=audio.createOscillator(),lfoGain=audio.createGain(),filter=audio.createBiquadFilter();base.type='sine';base.frequency.value=55;low.type='triangle';low.frequency.value=82.4;filter.type='lowpass';filter.frequency.value=240;filter.Q.value=.7;lfo.frequency.value=.09;lfoGain.gain.value=18;lfo.connect(lfoGain);lfoGain.connect(filter.frequency);base.connect(filter);low.connect(filter);filter.connect(master);base.start();low.start();lfo.start();oscillators=[base,low,lfo];}
+document.getElementById('enter').onclick=()=>{startAudio();document.getElementById('soundNotice').style.display='none';};
+document.getElementById('sound').onclick=()=>{startAudio();if(master){master.gain.setTargetAtTime(master.gain.value>.01?0:.12,audio.currentTime,.2);document.getElementById('sound').textContent=master.gain.value>.01?'♫ SOUND OFF':'♫ SOUND ON'}};
+document.getElementById('pause').onclick=()=>{paused=!paused;document.getElementById('pause').textContent=paused?'▶ RESUME':'Ⅱ PAUSE'};
+document.getElementById('speed').onclick=()=>{speed=speed===1?2:speed===2?4:1;document.getElementById('speed').textContent='⏩ SPEED '+speed+'X'};
+document.getElementById('home').onclick=()=>{controls.target.set(0,0,0);camera.position.set(0,32,78);selectPlanet(0)};
+document.getElementById('cinema').onclick=()=>{cinema=!cinema;document.getElementById('cinema').textContent=cinema?'◉ CINEMATIC ON':'◉ CINEMATIC';document.getElementById('left').style.opacity=cinema?'.12':'1';document.getElementById('right').style.opacity=cinema?'.12':'1';document.getElementById('hint').style.opacity=cinema?'.12':'1';};
+const clock=new THREE.Clock();
+function animate(){requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.04);if(!paused){sun.rotation.y+=dt*.08;stars.rotation.y+=dt*.001;planets.forEach((p,i)=>{if(i>0){p.angle+=dt*data[i].period*.15*speed;p.group.position.set(Math.cos(p.angle)*data[i].d,0,Math.sin(p.angle)*data[i].d)}p.mesh.rotation.y+=dt*(i===0?.04:.16)*speed;if(p.group.userData.moon)p.group.userData.moon.position.set(Math.cos(clock.elapsedTime*.7)*2.3,.15,Math.sin(clock.elapsedTime*.7)*2.3)});if(cinema){camera.position.x=Math.sin(clock.elapsedTime*.08)*82;camera.position.z=Math.cos(clock.elapsedTime*.08)*82;camera.position.y=25+Math.sin(clock.elapsedTime*.12)*8;controls.target.set(0,0,0)}}controls.update();renderer.render(scene,camera)}
+animate();
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2))});
+</script>
+</body></html>
